@@ -359,10 +359,10 @@ def save_house_info():
     except Exception as e:
         current_app.logger.error(e)
         return jsonify(error=RET.DBERR, errmsg="数据异常")
-
-    # 如果数据库没有该条记录
-    if area is None:
-        return jsonify(error=RET.NODATA, errmsg="城区信息有误")
+    else:
+        # 如果数据库没有该条记录
+        if area is None:
+            return jsonify(error=RET.NODATA, errmsg="城区信息有误")
 
     # 保存房屋信息, 到数据库中
     house = House(user_id=user_id,
@@ -443,9 +443,9 @@ def save_house_image():
     except Exception as e:
         current_app.logger.error(e)
         return jsonify(errcode=RET.DBERR, errmsg="数据库异常")
-
-    if house is None:
-        return jsonify(errcode=RET.NODATA, errmsg="房屋不存在")
+    else:
+        if house is None:
+            return jsonify(errcode=RET.NODATA, errmsg="房屋不存在")
 
     # 保存图片到七牛中
     image_data = image_file.read()

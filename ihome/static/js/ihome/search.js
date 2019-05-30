@@ -3,7 +3,6 @@ var house_data_querying = false;  // 记录是否在发送请求, 这是一个�
 var vm = new Vue({
     el: "#v-container",
     data: {
-        aaa: '你好',
         // 存储所有的房屋信息
         initHouses: [],
         // 存储区域的对象列表
@@ -101,7 +100,7 @@ var vm = new Vue({
                                     if(idName=='start-date'){
                                         v_self.startDate = rs.text;
                                     }else if(idName=='end-date'){
-                                        v_self.endDate = rs.text;
+                                         v_self.endDate = rs.text;
 
                                         // 先清空房屋列表
                                         v_self.initHouses =  [];
