@@ -932,19 +932,95 @@ API视图函数介绍:
 | /ihome/static/html | detail.html |
 | /ihome/static/js   | detail.js |
 
+1. 本页主要对房屋详细信息的展示,  可分为轮播, 房屋基本信息, 及房屋设施三个部分
+2. 其次, 我们需要在路径参数值中, 获取房屋id信息, 这样我们才能展示出对应的房屋详情
+3. 然后, 在初始页面时, 我们需要最先向服务端发送请求, 获取该房屋id对应的房屋详情数据
 
+**轮播:**
+
+1. 主要是对房屋图片的展示,  由于时间问题, 我只写了一个简单的轮播, 主要的对元素的展示与隐藏, 再加上一点过渡, 代码如下:
+
+``` javascript
+// 自动设置轮播窗口的高度
+setSliderHeigt: function() {
+    this.$refs.swiperContainer.style.height = this.$refs.swiperContainer.offsetWidth * 0.8 + 'px';
+},
+
+// 设置轮播
+setSlider: function(){
+    let xtSliderLength = this.$refs.swiperContainer.children.length;
+    if(this.sliderItemslength >= xtSliderLength){
+        this.sliderItemslength = 0;
+    }
+    let self = this;
+    Array.from(self.$refs.swiperContainer.children).forEach(function (item, index) {
+        if(index != self.sliderItemslength){
+            item.style.cssText = "right: -100%; display: none;";
+            item.style.right = '-100%';
+        }else{
+            item.style.cssText = "right: 0; display: block;";
+        }
+    });
+    this.sliderItemslength += 1;
+}
+```
+
+**房屋基本信息:**
+
+1. 将房屋的基本信息, 分别以插值表达式, 渲染在页面中
+
+**房屋设施:**
+
+1. 后端给我们返回的数据中, 其中有一项是房屋设施详情的id数组, 这个数组里是该房屋所具备的设施id
+2. 但是在页面中, 我们需要展示出所有的设施信息, 以图表表示某一个设置是否提供, 所以此时我们需要定义一个变量,  对象数组来概括所有的设置信息, 如下:
+
+``` javas
+// 房屋设施
+facilities: [
+   	{id: 1,  name: '无线网络', clsName: 'wirelessnetwork-ico'},
+   	{id: 2,  name: '热水淋浴', clsName: 'shower-ico'},
+   	{id: 3,  name: '空调', clsName: 'aircondition-ico'},
+   	{id: 4,  name: '暖气', clsName: 'heater-ico'},
+	{id: 5,  name: '允许吸烟', clsName: 'smoke-ico'},
+  	{id: 6,  name: '饮水设备', clsName: 'drinking-ico'},
+   	{id: 7,  name: '牙具', clsName: 'brush-ico'},
+  	{id: 8,  name: '香皂', clsName: 'soap-ico'},
+  	{id: 9,  name: '拖鞋', clsName: 'slippers-ico'},
+  	{id: 10, name: '手纸', clsName: 'toiletpaper-ico'},
+	{id: 11, name: '毛巾', clsName: 'towel-ico'}
+  	{id: 12, name: '沐浴露、洗发露', clsName: 'toiletries-ico'},
+ 	{id: 13, name: '冰箱', clsName: 'icebox-ico'},
+ 	{id: 14, name: '洗衣机', clsName: 'washer-ico'},
+	{id: 15, name: '电梯', clsName: 'elevator-ico'},
+   	{id: 16, name: '允许做饭', clsName: 'iscook-ico'},
+	{id: 17, name: '允许带宠物', clsName: 'pet-ico'},
+	{id: 18, name: '允许聚会', clsName: 'meet-ico'},
+	{id: 19, name: '门禁系统', clsName: 'accesssys-ico'},
+   	{id: 20, name: '停车位', clsName: 'parkingspace-ico'},
+  	{id: 21, name: '有线网络', clsName: 'wirednetwork-ico'},
+	{id: 22, name: '电视', clsName: 'tv-ico'},
+ 	{id: 23, name: '浴缸', clsName: 'hotbathtub-ico'},
+],
+```
+
+3. 在页面中, 我们使用v-for先遍历facilities展示出所有的设施信息, 同时使用三元表达式, 判断facilities每一项的id值, 是否出现在服务端返回的设施信息数组中, 如果出现代表该设施已提供, 则通过控制ClassName属性展示激活的图标, 否则使用未激活的图标
 
 ####  2. 后端部分
 
 API视图函数介绍:
 
-| Views                                     | Description                                          |
-|||
-||
+| Views                                      | Description |
+| ------------------------------------------ | ----------- |
+| ihome.api_1_0.house.views.get_house_detail |             |
 
-
-
-
+1. 获取路径参数(房屋id)
+2. 效验参数是否缺失
+3. 尝试从session中获取访问者的id(如果为空, 则使用默认值-1)
+4. 尝试从redis中读取返回信息的缓存数据, 如果没有缓存数据(则继续往下进行), 如果有数据则立即返回给客服端
+5. 查询数据库, 以房屋id作为查询条件, 获取房屋对象
+6. 尝试使用房屋模型类中封装的数据转字典方法, 获取房屋信息的字典数据, 如果获取到(将其转为json类型)
+7. 将转换后的json数据, 存储在reids中(注意: 需要设置过期时间, 该过期时间在配置中有预留选项)
+8. 返回json数据给客户端
 
 ----
 
@@ -965,19 +1041,30 @@ API视图函数介绍:
 | /ihome/static/html | booking.html |
 | /ihome/static/js   | booking.js |
 
+1. 页面初始化, 获取房屋信息
+2. 封装时间输入触发的方法(当该方法触发时, 显示时间选项, 同时使用自封装的方法, 计算两个日期相差的天数, 而且还要计算出订单总价, 存储在data属性中, 该属性的值会更新到页面订单金额中)
+3. 订单提交, 将房屋id, 起始日期, 结束日期提交到服务端, 注意这里我们最好不要提交订单金额, 所有的金额操作应该在服务端计算, 前端仅仅用于展示给用户看的
+
 
 
 ####  2. 后端部分
 
 API视图函数介绍:
 
-| Views                                     | Description                                          |
-|||
-||
+| Views                                | Description  |
+| ------------------------------------ | ------------ |
+| ihome.api_1_0.order.views.sava_order | 保存用户订单 |
 
-
-
-
+1. 获取用户id (使用g对象)
+2. 获取参数(房屋id, 起始, 结束入住时间)
+3. 效验参数完整性
+4. 日期格式检查
+5. 通过房屋id, 查询房屋是否存在
+6. 判断预定的房屋是不是房东自己的(防止房东自己刷单)
+7. 确保用户预定的时间内, 房屋没有被人下单
+8. 计算订单总额
+9. 保存订单数据
+10. 返回状态信息
 
 ----
 
@@ -998,19 +1085,26 @@ API视图函数介绍:
 | /ihome/static/html | orders.html |
 | /ihome/static/js   | orders.js |
 
+1. 页面初始化, 获取用户所有的订单信息 (在发送请求时, 我们需要传递一个路径参数, 来区分用户的身份, 如?role=customer)
+2. 每个订单都有两个可触发的选项, 去支付和发表评价 (这是根据订单的状态同步的)
+3. 当用户点击去支付时, 我们会将用户导向支付宝的支付页面中
+4. 当用户点击发表评价时, 则弹出评价的输入框
+
 
 
 ####  2. 后端部分
 
 API视图函数介绍:
 
-| Views                                     | Description                                          |
-|||
-||
+| Views                                     | Description      |
+| ----------------------------------------- | ---------------- |
+| ihome.api_1_0.order.views.get_user_orders | 获取用户订单信息 |
 
-
-
-
+1. 获取用户id
+2. 获取参数(用户身份), 如果没有则设置为空字符串
+3. 查询订单数据 (其中会根据获取到的用户身份参数, 以不同的身份查询信息)
+4. 遍历所有的查询数据, 同时用在模型中封装的方法将查询数据转为字典数据), 然后将每一个字典都追加在一个但单独的列表中
+5. 返回该列表数据给客户端
 
 ----
 
@@ -1031,19 +1125,33 @@ API视图函数介绍:
 | /ihome/static/html | lorders.html |
 | /ihome/static/js   | lorders.js |
 
+1. 页面初始化, 获取自己名下所有房屋的订单 (在发送请求时, 我们需要传递一个路径参数, 来区分用户的身份, 如?role=landlord)
+2. 当订单的状态为待接单时, 房东可以对订单进行接单与拒单, (如果拒单, 则弹出对话框, 需要房东说明拒单原因), 同时在发送请求时, 还要提供是接单还是拒单的参数,   在请求的路径中还要设置订单的id
+
 
 
 ####  2. 后端部分
 
 API视图函数介绍:
 
-| Views                                     | Description                                          |
-|||
-||
+| Views                                         | Description                |
+| --------------------------------------------- | -------------------------- |
+| ihome.api_1_0.order.views.get_user_orders     | 获取房东名下所有房屋的订单 |
+| ihome.api_1_0.order.views.accept_reject_order | 房东接单或拒单操作         |
 
+**接口一get_user_orders:**
 
+1. 它和查询用户订单信息的接口是一样的, 只是提供的查询参数(身份信息)不同而已...
 
+**接口二accept_reject_order:**
 
+1. 获取用户id
+2. 获取参数, 是接单还是拒单
+3. 效验参数的合法性 (是否为['accept', 'reject'] 其中的一个)
+4. 根据订单号查询订单, 并且要求订单处于等待接单的状态
+5. 确保房东只能修改属于自己房子的订单
+6. 修改订单状态
+7. 返回状态信息
 
 ----
 
@@ -1070,13 +1178,34 @@ API视图函数介绍:
 
 API视图函数介绍:
 
-| Views                                     | Description                                          |
-|||
-||
+| Views                                        | Description      |
+| -------------------------------------------- | ---------------- |
+| ihome.api_1_0.order.alipay.order_pay         | 订单支付         |
+| ihome.api_1_0.order.alipay.pay_query         | 订单支付状态查询 |
+| ihome.api_1_0.order.views.sava_order_comment | 保存订单评论信息 |
 
+**接口一order_pay:**
 
+1. 获取订单id
+2. 判断订单状态, 订单必须是待支付状态
+3. 业务处理: 使用python sdk调用支付宝的支付接口
+4. 返回应答, 返回支付链接 (其中支付宝网关链接在配置文件中获取)
 
+**接口二order_pay:**
 
+1. 获取订单id
+2. 判断订单状态, 订单必须是待支付状态
+3. 查询支付: 调用接口, 根据响应的状态码返回支付状态信息
+
+**接口三sava_order_comment:**
+
+1. 获取用户id
+2. 获取请求体参数(用户评论信息)
+3. 效验参数是否缺失
+4. 需要确保只能评论自己下的订单, 而且处于待评价状态才可以
+5. 修改订单状态
+6. 因为房屋详情中有订单的评价信息, 为了让最新的评价信息展示在房屋详情中, 所以删除reidis中关于本订单的的房屋信息
+7. 返回状态信息
 
 ----
 
@@ -1084,7 +1213,7 @@ API视图函数介绍:
 
 # 其它说明
 
-
+**关于项目部署等问题, 与Django项目中的部署流程基本一致, 所以这里就不再次介绍...**
 
 
 

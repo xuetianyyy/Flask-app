@@ -88,9 +88,9 @@ def get_hosue_details():
     except Exception as e:
         current_app.logger.error(e)
         return jsonify(errcode=RET.DBERR, errmsg="数据库异常")
-
-    if house is None:
-        return jsonify(errcode=RET.NODATA, errmsg="没有查询到数据")
+    else:
+        if house is None:
+            return jsonify(errcode=RET.NODATA, errmsg="没有查询到数据")
 
     try:
         # 先将数据转换为字典, 这是在模型中封装的方法
@@ -99,7 +99,7 @@ def get_hosue_details():
         current_app.logger.error(e)
         return jsonify(errcode=RET.SERVERERR, errmsg="数据提取失败, 请联系管理员")
     else:
-        # 将数据存放到redis中
+        # 转为json数据
         json_house = json.dumps(house_data_dict)
 
     # 获取设置的redis过期时间, 配置文件中
