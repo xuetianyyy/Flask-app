@@ -36,12 +36,13 @@ class Config():
     SEND_SMS_CODE_INTERVAL = 60
     # 用户最大的登录错误次数限制
     LOGIN_ERROR_MAX_NUMS = 5
-
+    
     # 七牛云存储相关配置,空间域名
     QINIU_ZONE_HOST = 'http://image.weidong168.com'
 
     # 设置获取房源信息的redis缓存时间, 单位/秒
     AREA_INFO_REDIS_CACHE_EXPIRES = 3600 * 2
+    
     # 设置首页幻灯片, 热门房源, 以及房屋详情信息的redis缓存时间, 单位/秒
     HOME_PAGE_DATA_REDIS_EXPIRES = 3600 * 3
     # 设置搜索列表的缓存过期时间/秒
